@@ -6,7 +6,7 @@ import path from 'path';
 
 import { errorHandler } from './middleware/error-handler.js';
 import AppError from './utils/AppError.js';
-import userRoutes from './routes/user.routes.js';
+import apiRoutes from './routes/index.js';
 
 /**
  * Punto de entrada de la aplicación Express.
@@ -35,7 +35,7 @@ app.use(mongoSanitize());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // RUTAS
-app.use('/api/user', userRoutes);
+app.use('/api', apiRoutes);
 
 // Manejador de rutas no encontradas (404)
 app.use((req, res, next) => {

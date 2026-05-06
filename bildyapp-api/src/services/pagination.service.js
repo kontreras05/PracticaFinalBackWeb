@@ -10,7 +10,12 @@ export const paginate = async (model, filter = {}, { page = 1, limit = 10, sort,
   if (sort) query.sort(sort);
   if (populate) query.populate(populate);
 
-  const [items, totalItems] = await Promise.all([query.exec(), model.countDocuments(filter)]);
+  // countDocuments doesn't trigger pre(/^find/) so we must exclude deleted explicitly
+  const countFilter = Object.prototype.hasOwnProperty.call(filter, 'deleted')
+    ? filter
+    : { ...filter, deleted: { $ne: true } };
+
+  const [items, totalItems] = await Promise.all([query.exec(), model.countDocuments(countFilter)]);
 
   return {
     items,
