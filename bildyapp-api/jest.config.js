@@ -5,7 +5,7 @@ export default {
   testMatch: ['**/tests/**/*.test.js'],
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
-    'src/**/*.js',
+    'src/**/*.{js,ts}',
     '!src/index.js',
   ],
   coverageThreshold: {

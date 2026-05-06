@@ -2,13 +2,15 @@ import { z } from 'zod';
 
 const mongoId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID de MongoDB inválido');
 
-const addressSchema = z.object({
-  street: z.string().trim().optional(),
-  number: z.string().trim().optional(),
-  postal: z.string().trim().optional(),
-  city: z.string().trim().optional(),
-  province: z.string().trim().optional(),
-}).optional();
+const addressSchema = z
+  .object({
+    street: z.string().trim().optional(),
+    number: z.string().trim().optional(),
+    postal: z.string().trim().optional(),
+    city: z.string().trim().optional(),
+    province: z.string().trim().optional(),
+  })
+  .optional();
 
 const projectBodyFields = {
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -25,10 +27,13 @@ export const createProjectSchema = z.object({
 });
 
 export const updateProjectSchema = z.object({
-  body: z.object(projectBodyFields).partial().refine(
-    (data) => Object.keys(data).length > 0,
-    'Se requiere al menos un campo para actualizar'
-  ),
+  body: z
+    .object(projectBodyFields)
+    .partial()
+    .refine(
+      (data) => Object.keys(data).length > 0,
+      'Se requiere al menos un campo para actualizar'
+    ),
   params: z.object({ id: mongoId }),
 });
 
@@ -46,3 +51,7 @@ export const listProjectsQuerySchema = z.object({
 export const idParamSchema = z.object({
   params: z.object({ id: mongoId }),
 });
+
+export type CreateProjectInput = z.infer<typeof createProjectSchema>['body'];
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>['body'];
+export type ListProjectsQuery = z.infer<typeof listProjectsQuerySchema>['query'];

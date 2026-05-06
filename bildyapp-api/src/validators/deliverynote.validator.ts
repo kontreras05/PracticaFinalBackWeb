@@ -6,27 +6,29 @@ const commonFields = {
   client: mongoId.describe('ID del cliente'),
   project: mongoId.describe('ID del proyecto'),
   description: z.string().trim().optional(),
-  workDate: z.coerce.date({ error: 'Fecha de trabajo inválida' }),
+  workDate: z.coerce.date(),
 };
 
 const materialSchema = z.object({
   ...commonFields,
   format: z.literal('material'),
   material: z.string().trim().min(1, 'El material es obligatorio'),
-  quantity: z.number({ error: 'La cantidad es obligatoria' }).positive('La cantidad debe ser positiva'),
+  quantity: z.number().positive('La cantidad debe ser positiva'),
   unit: z.string().trim().min(1, 'La unidad es obligatoria'),
 });
 
 const hoursSchema = z.object({
   ...commonFields,
   format: z.literal('hours'),
-  hours: z.number({ error: 'Las horas son obligatorias' }).positive('Las horas deben ser positivas'),
-  workers: z.array(
-    z.object({
-      name: z.string().trim().min(1, 'El nombre del trabajador es obligatorio'),
-      hours: z.number().positive('Las horas deben ser positivas'),
-    })
-  ).optional(),
+  hours: z.number().positive('Las horas deben ser positivas'),
+  workers: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, 'El nombre del trabajador es obligatorio'),
+        hours: z.number().positive('Las horas deben ser positivas'),
+      })
+    )
+    .optional(),
 });
 
 export const createDeliveryNoteSchema = z.object({
@@ -54,7 +56,9 @@ export const idParamSchema = z.object({
   params: z.object({ id: mongoId }),
 });
 
-// signDeliveryNoteSchema: no valida body (firma viene como archivo Multer), solo el id del param
 export const signDeliveryNoteSchema = z.object({
   params: z.object({ id: mongoId }),
 });
+
+export type CreateDeliveryNoteInput = z.infer<typeof createDeliveryNoteSchema>['body'];
+export type ListDeliveryNotesQuery = z.infer<typeof listDeliveryNotesQuerySchema>['query'];
