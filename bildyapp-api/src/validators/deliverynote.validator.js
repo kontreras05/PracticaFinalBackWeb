@@ -40,7 +40,10 @@ export const listDeliveryNotesQuerySchema = z.object({
     project: mongoId.optional(),
     client: mongoId.optional(),
     format: z.enum(['material', 'hours']).optional(),
-    signed: z.coerce.boolean().optional(),
+    signed: z.preprocess(
+      (v) => (v === 'true' ? true : v === 'false' ? false : v),
+      z.boolean().optional()
+    ),
     from: z.coerce.date().optional(),
     to: z.coerce.date().optional(),
     sort: z.string().trim().optional(),

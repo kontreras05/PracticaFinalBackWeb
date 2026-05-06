@@ -13,16 +13,17 @@ export const validate = (schema) => async (req, res, next) => {
       params: req.params,
     });
     
-    // Remplazamos con los datos validados y posiblemente transformados (trim, lowercase, etc.)
     if (parsed.body) req.body = parsed.body;
-    if (parsed.query) req.query = parsed.query;
+    // Express 5 makes req.query a read-only getter — mutate in place instead of replacing
+    if (parsed.query) Object.assign(req.query, parsed.query);
     if (parsed.params) req.params = parsed.params;
-    
+
     next();
   } catch (error) {
     if (error.name === 'ZodError') {
-      // Extraemos los mensajes de error de forma legible
-      const errorMessages = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+      // Zod v4 uses .issues; v3 used .errors
+      const issues = error.issues ?? error.errors ?? [];
+      const errorMessages = issues.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
       return next(AppError.badRequest(`Validación fallida: ${errorMessages}`));
     }
     next(error);

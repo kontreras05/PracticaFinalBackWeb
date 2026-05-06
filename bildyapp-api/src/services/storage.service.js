@@ -26,6 +26,9 @@ const optimizeImage = async (buffer) => {
  * @returns {Promise<string>} Public URL of the uploaded file
  */
 export const uploadBuffer = async (buffer, publicId, mimetype) => {
+  if (process.env.NODE_ENV === 'test') {
+    return `https://fake.cloudinary.com/${publicId}.webp`;
+  }
   const isPdf = mimetype === 'application/pdf';
   const uploadData = isPdf ? buffer : await optimizeImage(buffer);
 

@@ -4,6 +4,7 @@ import AppError from '../utils/AppError.js';
 import { User } from '../models/User.js';
 import { Company } from '../models/Company.js';
 import { notificationService } from '../services/notification.service.js';
+import { sendVerificationCode, sendInvitationCode } from '../services/mail.service.js';
 import { config } from '../config/index.js';
 
 const signToken = (id, secret, expiresIn) => {
@@ -70,7 +71,10 @@ export const register = async (req, res, next) => {
     // 5. Notificar al sistema de eventos (logs por consola)
     notificationService.emit('user:registered', { email: newUser.email });
 
-    // 6. Generar JWT y enviar respuesta
+    // 6. Enviar email con el código de verificación (no bloqueante)
+    sendVerificationCode(newUser.email, verificationCode).catch(() => {});
+
+    // 7. Generar JWT y enviar respuesta
     createSendTokens(newUser, res);
   } catch (error) {
     next(error);
@@ -382,6 +386,8 @@ export const inviteUser = async (req, res, next) => {
     });
 
     notificationService.emit('user:invited', { email: newUser.email, company });
+
+    sendInvitationCode(newUser.email, name, newUser.verificationCode).catch(() => {});
 
     res.status(201).json({
       status: 'success',

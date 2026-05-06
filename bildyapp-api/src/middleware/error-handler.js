@@ -1,4 +1,5 @@
 import AppError from '../utils/AppError.js';
+import { logger } from '../services/logger.service.js';
 
 /**
  * Middleware centralizado para manejo de errores de Express.
@@ -40,10 +41,13 @@ export const errorHandler = (err, req, res, next) => {
     error = new AppError('Tu token de sesión ha expirado. Por favor inicia sesión de nuevo.', 401);
   }
 
+  if (error.statusCode >= 500) {
+    logger.notifyError(error, req);
+  }
+
   res.status(error.statusCode).json({
     status: error.status,
     message: error.message,
-    // Mostrar stack trace solo en desarrollo para debugging
     ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {})
   });
 };

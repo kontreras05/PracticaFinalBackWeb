@@ -53,11 +53,10 @@ const deliveryNoteSchema = new mongoose.Schema({
 });
 
 // Bloquear modificaciones una vez firmado
-deliveryNoteSchema.pre('save', function (next) {
+deliveryNoteSchema.pre('save', async function () {
   if (!this.isNew && !this.isModified('signed') && this.signed) {
-    return next(AppError.conflict('No se puede modificar un albarán firmado.'));
+    throw AppError.conflict('No se puede modificar un albarán firmado.');
   }
-  next();
 });
 
 deliveryNoteSchema.index({ company: 1, client: 1 });

@@ -25,6 +25,9 @@ const formatDate = (date) =>
  * @returns {Promise<Buffer>}
  */
 export const generateDeliveryNotePDF = async (deliveryNote) => {
+  if (process.env.NODE_ENV === 'test') {
+    return Buffer.from('%PDF-1.4 fake-pdf');
+  }
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
