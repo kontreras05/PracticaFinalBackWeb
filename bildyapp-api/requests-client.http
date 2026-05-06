@@ -1,0 +1,58 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@token = <paste_access_token_here>
+@clientId = <paste_client_id_here>
+
+### 1) Crear cliente
+# @name createClient
+POST {{baseUrl}}/client
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Construcciones García S.L.",
+  "cif": "B87654321",
+  "email": "contacto@garcia.com",
+  "phone": "912345678",
+  "address": {
+    "street": "Calle Mayor",
+    "number": "42",
+    "postal": "28013",
+    "city": "Madrid",
+    "province": "Madrid"
+  }
+}
+
+### 2) Listar clientes (con paginación y filtro por nombre)
+GET {{baseUrl}}/client?page=1&limit=10&name=García&sort=-createdAt
+Authorization: Bearer {{token}}
+
+### 3) Obtener cliente concreto
+GET {{baseUrl}}/client/{{clientId}}
+Authorization: Bearer {{token}}
+
+### 4) Listar clientes archivados
+GET {{baseUrl}}/client/archived
+Authorization: Bearer {{token}}
+
+### 5) Actualizar cliente
+PUT {{baseUrl}}/client/{{clientId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "phone": "666777888",
+  "email": "nuevo@garcia.com"
+}
+
+### 6) Archivar cliente (soft delete)
+DELETE {{baseUrl}}/client/{{clientId}}?soft=true
+Authorization: Bearer {{token}}
+
+### 7) Borrar cliente permanentemente (hard delete)
+DELETE {{baseUrl}}/client/{{clientId}}?soft=false
+Authorization: Bearer {{token}}
+
+### 8) Restaurar cliente archivado
+PATCH {{baseUrl}}/client/{{clientId}}/restore
+Authorization: Bearer {{token}}

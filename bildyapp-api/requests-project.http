@@ -1,0 +1,69 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@token = <paste_access_token_here>
+@clientId = <paste_client_id_here>
+@projectId = <paste_project_id_here>
+
+### 1) Crear proyecto
+# @name createProject
+POST {{baseUrl}}/project
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Reforma Oficinas Central",
+  "projectCode": "PRJ-2024-001",
+  "client": "{{clientId}}",
+  "address": {
+    "street": "Gran Vía",
+    "number": "10",
+    "postal": "28013",
+    "city": "Madrid",
+    "province": "Madrid"
+  },
+  "email": "obra@garcia.com",
+  "notes": "Reforma integral de tres plantas"
+}
+
+### 2) Listar proyectos (con filtros)
+GET {{baseUrl}}/project?page=1&limit=10&active=true&sort=-createdAt
+Authorization: Bearer {{token}}
+
+### 3) Filtrar proyectos por cliente
+GET {{baseUrl}}/project?client={{clientId}}
+Authorization: Bearer {{token}}
+
+### 4) Filtrar por nombre
+GET {{baseUrl}}/project?name=Reforma
+Authorization: Bearer {{token}}
+
+### 5) Obtener proyecto concreto
+GET {{baseUrl}}/project/{{projectId}}
+Authorization: Bearer {{token}}
+
+### 6) Listar proyectos archivados
+GET {{baseUrl}}/project/archived
+Authorization: Bearer {{token}}
+
+### 7) Actualizar proyecto
+PUT {{baseUrl}}/project/{{projectId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Reforma Oficinas Central — Fase 2",
+  "notes": "Añadida fase de pintura",
+  "active": false
+}
+
+### 8) Archivar proyecto (soft delete)
+DELETE {{baseUrl}}/project/{{projectId}}?soft=true
+Authorization: Bearer {{token}}
+
+### 9) Borrar proyecto permanentemente (hard delete)
+DELETE {{baseUrl}}/project/{{projectId}}?soft=false
+Authorization: Bearer {{token}}
+
+### 10) Restaurar proyecto archivado
+PATCH {{baseUrl}}/project/{{projectId}}/restore
+Authorization: Bearer {{token}}

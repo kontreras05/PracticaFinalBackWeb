@@ -1,0 +1,90 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@token = <paste_access_token_here>
+@clientId = <paste_client_id_here>
+@projectId = <paste_project_id_here>
+@noteId = <paste_deliverynote_id_here>
+
+### 1) Crear albarán de horas
+# @name createHoursNote
+POST {{baseUrl}}/deliverynote
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "format": "hours",
+  "client": "{{clientId}}",
+  "project": "{{projectId}}",
+  "workDate": "2024-06-15",
+  "description": "Jornada de instalación eléctrica",
+  "hours": 8,
+  "workers": [
+    { "name": "Juan García", "hours": 5 },
+    { "name": "María López", "hours": 3 }
+  ]
+}
+
+### 2) Crear albarán de materiales
+# @name createMaterialNote
+POST {{baseUrl}}/deliverynote
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "format": "material",
+  "client": "{{clientId}}",
+  "project": "{{projectId}}",
+  "workDate": "2024-06-15",
+  "description": "Suministro de cemento Portland",
+  "material": "Cemento Portland CEM I 42.5",
+  "quantity": 50,
+  "unit": "kg"
+}
+
+### 3) Listar albaranes (paginación y filtros)
+GET {{baseUrl}}/deliverynote?page=1&limit=10&sort=-workDate
+Authorization: Bearer {{token}}
+
+### 4) Filtrar por proyecto
+GET {{baseUrl}}/deliverynote?project={{projectId}}
+Authorization: Bearer {{token}}
+
+### 5) Filtrar por formato y estado de firma
+GET {{baseUrl}}/deliverynote?format=hours&signed=false
+Authorization: Bearer {{token}}
+
+### 6) Filtrar por rango de fechas
+GET {{baseUrl}}/deliverynote?from=2024-01-01&to=2024-12-31
+Authorization: Bearer {{token}}
+
+### 7) Obtener albarán concreto (con populate)
+GET {{baseUrl}}/deliverynote/{{noteId}}
+Authorization: Bearer {{token}}
+
+### 8) Descargar PDF (genera on-the-fly si no está firmado)
+GET {{baseUrl}}/deliverynote/pdf/{{noteId}}
+Authorization: Bearer {{token}}
+
+### 9) Firmar albarán (multipart/form-data con imagen de firma)
+# Usa ThunderClient, Postman o la extensión REST Client con soporte de archivos binarios
+# PATCH {{baseUrl}}/deliverynote/{{noteId}}/sign
+# Authorization: Bearer {{token}}
+# Content-Type: multipart/form-data
+#
+# signature = < /ruta/a/firma.png
+
+### 10) Borrar albarán (soft delete) — solo si no está firmado
+DELETE {{baseUrl}}/deliverynote/{{noteId}}?soft=true
+Authorization: Bearer {{token}}
+
+### 11) Borrar albarán (hard delete) — solo si no está firmado
+DELETE {{baseUrl}}/deliverynote/{{noteId}}?soft=false
+Authorization: Bearer {{token}}
+
+###
+### --- BONUS: Dashboard ---
+###
+
+### 12) Estadísticas agregadas (por mes, cliente y proyecto)
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{token}}
