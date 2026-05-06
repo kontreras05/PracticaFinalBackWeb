@@ -1,0 +1,138 @@
+### Variables
+@baseUrl = http://localhost:3000/api/user
+@email = test@example.com
+@password = Password123!
+@code = 123456
+@token = {{login.response.body.data.accessToken}}
+
+### 1) Registro de usuario
+# @name register
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2) Validación del email
+# @name validateEmail
+PUT {{baseUrl}}/validation
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "code": "{{code}}"
+}
+
+### 3) Login
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 4.1) Onboarding - Datos Personales
+# @name onboardingPersonal
+PUT {{baseUrl}}/register
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Juan",
+  "lastName": "Pérez",
+  "nif": "12345678Z"
+}
+
+### 4.2) Onboarding - Compañía (Freelance)
+# @name onboardingCompanyFreelance
+PATCH {{baseUrl}}/company
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "isFreelance": true
+}
+
+### 4.3) Onboarding - Compañía (Empresa convencional)
+# @name onboardingCompanyStandard
+PATCH {{baseUrl}}/company
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "isFreelance": false,
+  "name": "Tech Corp SL",
+  "cif": "B12345678",
+  "address": {
+    "street": "Gran Vía",
+    "number": "10",
+    "postal": "28013",
+    "city": "Madrid",
+    "province": "Madrid"
+  }
+}
+
+### 5) Logo de la compañía
+# (Esto es mejor probarlo con Postman/ThunderClient directamente 
+# adjuntando un archivo en modo Multipart o FormData)
+# PATCH {{baseUrl}}/logo
+# Authorization: Bearer {{token}}
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+#
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="logo"; filename="logo.png"
+# Content-Type: image/png
+#
+# < ./ruta/al/logo.png
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 6) Obtener usuario completo
+# @name getUser
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+
+### 7.1) Refresh token
+# @name refreshToken
+POST {{baseUrl}}/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.data.refreshToken}}"
+}
+
+### 7.2) Logout
+# @name logout
+POST {{baseUrl}}/logout
+Authorization: Bearer {{token}}
+
+### 8) Eliminar usuario (Soft)
+# @name deleteUserSoft
+DELETE {{baseUrl}}/?soft=true
+Authorization: Bearer {{token}}
+
+### 9) Cambiar contraseña
+# @name updatePassword
+PUT {{baseUrl}}/password
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "NewPassword456!"
+}
+
+### 10) Invitar a compañeros (Requiere rol Admin)
+# @name inviteUser
+POST {{baseUrl}}/invite
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "compi@example.com",
+  "name": "Compañero",
+  "lastName": "Invitado"
+}
