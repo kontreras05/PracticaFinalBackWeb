@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import path from 'path';
+import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 
 import { errorHandler } from './middleware/error-handler.js';
@@ -51,6 +52,17 @@ app.use(mongoSanitize());
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Health check — excluido de auth y rate limit
+app.get('/health', (req, res) => {
+  const dbState = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  res.status(200).json({
+    status: 'ok',
+    db: dbState[mongoose.connection.readyState] ?? 'unknown',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // RUTAS
 app.use('/api', apiRoutes);
