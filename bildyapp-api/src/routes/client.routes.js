@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { requireCompany } from '../middleware/scope.middleware.js';
+import { restrictTo } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.js';
 import {
   createClientSchema,
@@ -80,7 +81,7 @@ router.use(requireCompany);
  *       429:
  *         $ref: '#/components/responses/RateLimitError'
  */
-router.post('/', validate(createClientSchema), createClient);
+router.post('/', restrictTo('admin'), validate(createClientSchema), createClient);
 
 /**
  * @openapi
@@ -146,7 +147,7 @@ router.post('/', validate(createClientSchema), createClient);
  *       429:
  *         $ref: '#/components/responses/RateLimitError'
  */
-router.put('/:id', validate(updateClientSchema), updateClient);
+router.put('/:id', restrictTo('admin'), validate(updateClientSchema), updateClient);
 
 /**
  * @openapi
@@ -319,7 +320,7 @@ router.get('/:id', validate(idParamSchema), getClient);
  *       429:
  *         $ref: '#/components/responses/RateLimitError'
  */
-router.delete('/:id', validate(idParamSchema), deleteClient);
+router.delete('/:id', restrictTo('admin'), validate(idParamSchema), deleteClient);
 
 /**
  * @openapi
@@ -361,6 +362,6 @@ router.delete('/:id', validate(idParamSchema), deleteClient);
  *       429:
  *         $ref: '#/components/responses/RateLimitError'
  */
-router.patch('/:id/restore', validate(idParamSchema), restoreClient);
+router.patch('/:id/restore', restrictTo('admin'), validate(idParamSchema), restoreClient);
 
 export default router;

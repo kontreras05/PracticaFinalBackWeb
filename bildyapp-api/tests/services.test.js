@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import http from 'http';
 import { logger } from '../src/services/logger.service.js';
+import { errorHandler } from '../src/middleware/error-handler.js';
 import { socketService } from '../src/services/socket.service.js';
 import { sendVerificationCode, sendInvitationCode } from '../src/services/mail.service.js';
 import { generateDeliveryNotePDF } from '../src/services/pdf.service.js';
@@ -131,5 +132,51 @@ describe('socket.service', () => {
   it('emitToCompany sin init no hace nada', () => {
     // close() ya puso io en null en el test anterior — pero por seguridad lo invocamos
     expect(() => socketService.emitToCompany('xyz', 'evt', {})).not.toThrow();
+  });
+});
+
+// ── errorHandler middleware ──────────────────────────────────────────────────
+
+describe('errorHandler', () => {
+  function fakeRes() {
+    return {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+  }
+
+  const fakeReq = { method: 'GET', originalUrl: '/test' };
+  const next = jest.fn();
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    next.mockClear();
+  });
+
+  it('ZodError devuelve 400 con mensaje de validación', () => {
+    const res = fakeRes();
+    const err = { name: 'ZodError', issues: [{ message: 'email inválido' }] };
+    errorHandler(err, fakeReq, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json.mock.calls[0][0].message).toMatch(/Validation Error/);
+  });
+
+  it('código 11000 devuelve 409 con el valor duplicado', () => {
+    const res = fakeRes();
+    const err = { code: 11000, errmsg: 'E11000 duplicate key error: "admin@test.com"' };
+    errorHandler(err, fakeReq, res, next);
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json.mock.calls[0][0].message).toMatch(/admin@test\.com/);
+  });
+
+  it('error 5xx llama a logger.notifyError', () => {
+    const spy = jest.spyOn(logger, 'notifyError').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const res = fakeRes();
+    const err = new Error('boom inesperado');
+    errorHandler(err, fakeReq, res, next);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ message: 'boom inesperado' }), fakeReq);
   });
 });

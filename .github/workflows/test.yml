@@ -15,6 +15,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: bildyapp-api
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage
         working-directory: bildyapp-api

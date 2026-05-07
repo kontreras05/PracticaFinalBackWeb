@@ -1,7 +1,9 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import app from '../src/app.js';
+import { User } from '../src/models/User.js';
 
 let mongod;
 let token; // admin token with company
@@ -287,5 +289,36 @@ describe('PATCH /api/client/:id/restore', () => {
       .patch(`${BASE}/${client._id}/restore`)
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(404);
+  });
+});
+
+// ── RBAC — restrictTo ─────────────────────────────────────────────────────────
+
+describe('RBAC — guest no puede crear clientes', () => {
+  let guestToken;
+
+  beforeEach(async () => {
+    const admin = await User.findOne({ email: 'admin@test.com' });
+    const guest = await User.create({
+      email: 'guest@test.com',
+      password: 'test_password_not_used',
+      role: 'guest',
+      status: 'verified',
+      company: admin.company,
+    });
+    guestToken = jwt.sign(
+      { id: guest._id },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '15m' }
+    );
+  });
+
+  it('guest recibe 403 al intentar crear un cliente', async () => {
+    const res = await request(app)
+      .post(BASE)
+      .set('Authorization', `Bearer ${guestToken}`)
+      .send({ name: 'Cliente Prohibido', cif: 'Z12345678' });
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/permiso/i);
   });
 });
